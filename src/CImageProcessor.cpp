@@ -1,8 +1,5 @@
 #include "turtlebot3_gazebo/CImageProcessor.hpp"
 
-/********************************************************************************
-** Constructor and Destructors
-********************************************************************************/
 CImageProcessor::CImageProcessor()
 : Node("image_processor")
 {
@@ -15,10 +12,6 @@ CImageProcessor::CImageProcessor()
 
     RCLCPP_INFO( this->get_logger(), "Maze image processor node has been initialised" );
 }
-
-/********************************************************************************
-** Helper Functions
-********************************************************************************/
 
 // Helper function to detect ArUco tags and convert their IDs to ASCII characters
 char CImageProcessor::DetectArUcoTagsAndConvertToASCII( const sensor_msgs::msg::Image::SharedPtr msg )
@@ -72,9 +65,6 @@ char CImageProcessor::DetectArUcoTagsAndConvertToASCII( const sensor_msgs::msg::
 }
 
 
-/********************************************************************************
-** Callback Functions
-********************************************************************************/
 void CImageProcessor::ProcessImageCallback( const sensor_msgs::msg::Image::SharedPtr msg )
 {
     static std::string asciiWord = "";  // Holds the current ASCII word
@@ -95,10 +85,6 @@ void CImageProcessor::ProcessImageCallback( const sensor_msgs::msg::Image::Share
     mPubImageStatus->publish( imageStatusMsg );
 }
 
-
-/*******************************************************************************
-** Main
-*******************************************************************************/
 int main(int argc, char **argv)
 {
     rclcpp::init( argc, argv );
