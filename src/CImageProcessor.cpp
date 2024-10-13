@@ -1,6 +1,5 @@
 #include "turtlebot3_gazebo/CImageProcessor.hpp"
 
-
 /********************************************************************************
 ** Constructor and Destructors
 ********************************************************************************/
@@ -11,21 +10,22 @@ CImageProcessor::CImageProcessor()
     mSubImage = this->create_subscription<sensor_msgs::msg::Image>(
         "/camera/image_raw", 10, std::bind( &CImageProcessor::ProcessImageCallback, this, std::placeholders::_1 ));
 
-    // Create a publisher to send commands based on image analysis
+    // Create a publisher to send the ASCII word based on detected tags
     mPubImageStatus = this->create_publisher<std_msgs::msg::String>( "/image_status", 10 );
 
     RCLCPP_INFO( this->get_logger(), "Maze image processor node has been initialised" );
 }
 
-
 /********************************************************************************
 ** Helper Functions
 ********************************************************************************/
-double CImageProcessor::GetMatchPercentage( const sensor_msgs::msg::Image::SharedPtr msg )
+
+// Helper function to detect ArUco tags and convert their IDs to ASCII characters
+char CImageProcessor::DetectArUcoTagsAndConvertToASCII( const sensor_msgs::msg::Image::SharedPtr msg )
 {
     // Convert the ROS image message to an OpenCV image
     cv_bridge::CvImagePtr pCv;
-
+    
     try
     {
         pCv = cv_bridge::toCvCopy( msg, sensor_msgs::image_encodings::BGR8 );
@@ -33,26 +33,42 @@ double CImageProcessor::GetMatchPercentage( const sensor_msgs::msg::Image::Share
     catch( cv_bridge::Exception& e )
     {
         RCLCPP_ERROR( this->get_logger(), "cv_bridge exception: %s", e.what() );
-        return 0.0;
+        return '\0';  // Return null character if conversion fails
     }
 
-    // Convert the BGR image to HSV
-    cv::Mat hsvImage;
-    cv::cvtColor( pCv->image, hsvImage, cv::COLOR_BGR2HSV );
+    // Convert the BGR image to grayscale (ArUco detection works better in grayscale)
+    cv::Mat grayImage;
+    cv::cvtColor( pCv->image, grayImage, cv::COLOR_BGR2GRAY );
 
-    // Define the target color range in HSV with tolerance for #25F956 (Greenish color)
-    cv::Scalar lowerHsv( 40, 100, 100 );  // Lower bound for hue, saturation, and value
-    cv::Scalar upperHsv( 80, 255, 255 );  // Upper bound for hue, saturation, and value
+    // --- ArUco detection setup ---
+    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+    std::vector<int> markerIds;
+    std::vector<std::vector<cv::Point2f>> markerCorners;
 
-    // Create a mask where the color matches
-    cv::Mat mask;
-    cv::inRange( hsvImage, lowerHsv, upperHsv, mask );
+    // Detect ArUco markers in the image
+    cv::aruco::detectMarkers(grayImage, dictionary, markerCorners, markerIds);
 
-    // Calculate the percentage of matching pixels
-    double matchPercentage = (double) cv::countNonZero( mask ) / ( hsvImage.rows * hsvImage.cols );
-    
-    RCLCPP_INFO( this->get_logger(), "Match percentage: %.2f%%", matchPercentage * 100.0 );
-    return matchPercentage;
+    // If no markers are found, return null character
+    if (markerIds.empty())
+    {
+        RCLCPP_INFO( this->get_logger(), "No ArUco markers detected." );
+        return '\0';
+    }
+
+    // Assuming we are interested in the first detected ArUco marker's ID
+    int detectedId = markerIds[0]; // Change logic here if more than one marker should be handled
+
+    // --- Convert detected ArUco marker ID to ASCII ---
+    if (detectedId < 0 || detectedId > 127) // Only valid for ASCII characters (0-127)
+    {
+        RCLCPP_ERROR( this->get_logger(), "Invalid ArUco marker ID for ASCII: %d", detectedId );
+        return '\0';
+    }
+
+    char asciiChar = static_cast<char>(detectedId);
+    RCLCPP_INFO( this->get_logger(), "Detected ArUco ID: %d, ASCII Character: %c", detectedId, asciiChar );
+
+    return asciiChar;
 }
 
 
@@ -61,29 +77,21 @@ double CImageProcessor::GetMatchPercentage( const sensor_msgs::msg::Image::Share
 ********************************************************************************/
 void CImageProcessor::ProcessImageCallback( const sensor_msgs::msg::Image::SharedPtr msg )
 {
-    double matchPercentage = GetMatchPercentage( msg );
+    static std::string asciiWord = "";  // Holds the current ASCII word
+
+    // Detect ArUco tag and get the ASCII character
+    char asciiChar = DetectArUcoTagsAndConvertToASCII( msg );
+    
+    // Check if a valid ASCII character was detected
+    if (asciiChar != '\0')
+    {
+        asciiWord += asciiChar;  // Append the character to the word
+        RCLCPP_INFO( this->get_logger(), "Current ASCII Word: %s", asciiWord.c_str() );
+    }
+
+    // Publish the current word as the status message
     std_msgs::msg::String imageStatusMsg;
-
-    // Send move command if match percentage is between 30% and 55%
-    if(( matchPercentage >= mLowerThreshold ) && ( matchPercentage < mUpperThreshold ))
-    {
-        imageStatusMsg.data = "move_forward";
-        RCLCPP_INFO( this->get_logger(), "Sending move forward command." );
-    }
-    // Send stop command if match percentage is greater than or equal to 55%
-    else if( matchPercentage >= mUpperThreshold )
-    {
-        imageStatusMsg.data = "stop";
-        RCLCPP_INFO( this->get_logger(), "Sending stop command." );
-    }
-    // If match percentage is below 30%, do nothing or follow default wall-following behavior
-    else
-    {
-        imageStatusMsg.data = "default";
-        RCLCPP_INFO( this->get_logger(), "No significant match, following default behavior." );
-    }
-
-    // Publish the status message
+    imageStatusMsg.data = asciiWord;
     mPubImageStatus->publish( imageStatusMsg );
 }
 
