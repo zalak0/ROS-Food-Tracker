@@ -39,7 +39,7 @@ Push changes to GitHub:
 3. Check changed files are appropriate: `git status`
 4. Add relevant files for the commit `git add <file_1> <file_2> ...` or `git add .` to add all
    - **Note**: Commits should be logically atomic (e.g. "Refactored movement logic and fixed header file structure" should be two separate commits)
-5. Create a commit with `git commit -m "2024-Sep-<DD> - <your-name> - <commit-message>”`
+5. Create a commit with `git commit -m "2024-Sep-<DD> - <your-name> - <commit-message>”`ot
 6. Push commit to remote (GitHub) main branch: `git push origin main`
 
 ### Run TurtleBot3 Drive Node in Gazebo
@@ -63,3 +63,10 @@ Adds commands to system shell startup script:
 Required to be run every terminal session:
 
 `source install/setup.sh && source /opt/ros/humble/setup.sh && source /usr/share/gazebo/setup.sh`
+
+### Running code on bot
+
+1. Open terminal for robot (run bringup and other tests)
+2. Open another terminal to confirm communication using ssh command
+3. Open terminal for computer and then colcon build respective files (DON'T DO THIS IN ROBOT TERMINALLLLL!!!!!)
+4. Bash and run the file
