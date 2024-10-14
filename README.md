@@ -70,3 +70,7 @@ Required to be run every terminal session:
 2. Open another terminal to confirm communication using ssh command
 3. Open terminal for computer and then colcon build respective files (DON'T DO THIS IN ROBOT TERMINALLLLL!!!!!)
 4. Bash and run the file
+
+### Resources
+1. April/QR codes manual: https://docs.opencv.org/4.x/d5/dae/tutorial_aruco_detection.html
+2. April/QR codes GitHub: https://github.com/PlusToolkit/aruco
