@@ -12,9 +12,7 @@ CItem::CItem( int aMarkerId, int aQuantity, std::string aName )
 : mMarkerId( aMarkerId ),
   mQuantity( aQuantity ),
   mName( aName )
-{
-
-}
+{}
 
 
 int CItem::GetId()

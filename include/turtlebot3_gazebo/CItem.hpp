@@ -15,29 +15,29 @@ public:
     CItem( int aMarkerId );
     CItem( int aMarkerId, int aQuantity, std::string aName );
 
-    // GetId: Returns the ArUco marker id of the item
-    // Returns: the ArUco marker id of the item or -1 if not found
+    // Returns the ArUco marker id of the item
+    // @return the ArUco marker id of the item or -1 if not found
     int GetId();
 
-    // SetName: Updates the name of the item to the specified string
-    // Parameters:
+    // Updates the name of the item to the specified string
+    // @param
     // - aName: the human-readable string to represent the item
     void SetName( std::string aName );
 
-    // GetName: Returns the name of the item
-    // Returns: the human-readable string representing the item
+    // Returns the name of the item
+    // @return the human-readable string representing the item
     std::string GetName();
 
-    // GetQuantity: Returns the quantity of the item
-    // Returns: the quantity of the item
+    // Returns the quantity of the item
+    // @return the quantity of the item
     int GetQuantity();
 
-    // SetQuantity: Update the quantity of the item
-    // Parameters:
+    // Update the quantity of the item
+    // @param
     // - aQuantity: the quantity to update the item to
     void SetQuantity( int aQuantity );
 
-    // IncrementQuantity: Increase the quantity of the item by 1
+    // Increase the quantity of the item by 1
     void IncrementQuantity();
 
 private:
