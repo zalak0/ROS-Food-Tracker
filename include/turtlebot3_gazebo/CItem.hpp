@@ -12,12 +12,38 @@
 class CItem
 {
 public:
-    // Getters and setters for each member variable, probably overload for elegance
+    CItem( int aMarkerId );
+    CItem( int aMarkerId, int aQuantity, std::string aName );
+
+    // GetId: Returns the ArUco marker id of the item
+    // Returns: the ArUco marker id of the item or -1 if not found
+    int GetId();
+
+    // SetName: Updates the name of the item to the specified string
+    // Parameters:
+    // - aName: the human-readable string to represent the item
+    void SetName( std::string aName );
+
+    // GetName: Returns the name of the item
+    // Returns: the human-readable string representing the item
+    std::string GetName();
+
+    // GetQuantity: Returns the quantity of the item
+    // Returns: the quantity of the item
+    int GetQuantity();
+
+    // SetQuantity: Update the quantity of the item
+    // Parameters:
+    // - aQuantity: the quantity to update the item to
+    void SetQuantity( int aQuantity );
+
+    // IncrementQuantity: Increase the quantity of the item by 1
+    void IncrementQuantity();
 
 private:
-    int mMmarkerId;      // The ArUco marker id of the item
-    int mQuantity;       // The quantity of this item type
-    std::string mName;   // The human-readable name of the item
+    int mMarkerId;      // The ArUco marker id of the item
+    int mQuantity;      // The quantity of this item type
+    std::string mName;  // The human-readable name of the item
 };
 
 #endif
