@@ -3,7 +3,7 @@ project(LogicSimulator)
 set(CMAKE_CXX_FLAGS "-Wall") # Show warnings
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY # Destination for generated executable
-    ${CMAKE_SOURCE_DIR}/bin
+    ../bin
 )
 
 set ( CMAKE_CXX_STANDARD 11 )

@@ -6,7 +6,7 @@
 
 int main( int argc, char *argv[] )
 { 
-  const std::string filePath = argv[1];
+  // const std::string filePath = argv[1];
   
   CStockList list = CStockList();
   list.WriteToDisk();
