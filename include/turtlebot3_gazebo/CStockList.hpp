@@ -1,19 +1,20 @@
 #ifndef STOCK_LIST
 #define STOCK_LIST
 
+#define TEST true
+
+#if TEST == false
 #include <std_msgs/msg/integer.hpp> 
 #include <std_msgs/msg/string.hpp> 
+#endif
 
 #include <string>
 #include <unordered_map>
 
-
-//---Forward Declarations------------------------------------------------------
-class CItem;
+#include "turtlebot3_gazebo/CItem.hpp"
 
 
 //---Enumerators---------------------------------------------------------------
-
 enum eUpdateType
 {
     CREATE,
@@ -27,7 +28,10 @@ enum eUpdateType
 ** CStockList: The stock list is responsible for recording scanned ArUco tags,
 **             reading, writing, updating and deleting items from the record.
 ********************************************************************************/
-class CStockList : public rclcpp::Node
+class CStockList
+#if TEST == false
+: public rclcpp::Node
+#endif
 {
 public:
     // Create stock list which exports to the default file name "stock_<export-time>.txt"
@@ -44,9 +48,9 @@ public:
     int GetQuantity( int aMarkerId );
 
     // Rename an item to a specified string by its ArUco marker id.
-    // @param aItemId The ArUco marker id of the item to rename.
+    // @param aMarkerId The ArUco marker id of the item to rename.
     // @param aName The string to rename the item to.
-    void RenameItem( int aItemId, std::string aName );
+    void RenameItem( int aMarkerId, std::string aName );
 
     // Exports the current stock to "<mFileName>_<export-time>.txt"
     void WriteToDisk();
@@ -54,8 +58,9 @@ public:
 private:
     // Variables
     std::string mFileName;                      // The path which stock export to
-    std::unordered_map< int, CItem > mItems;    // Map from ArUco id to item objects
+    std::unordered_map< int, CItem* > mItems;    // Map from ArUco id to item objects
 
+    #if TEST == false
     // ROS topic publishers
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr mPubStockUpdate;
 
@@ -64,6 +69,7 @@ private:
 
     // ROS subscriber callback updates stock record when new ArUco marker is scanned.
     void RecordStockCallback( const std_msgs::msg::Integer::SharedPtr msg );
+    #endif
 
     // Creates a new item instance with the specified parameters.
     // @param aMarkerId The ArUco marker id of the item.

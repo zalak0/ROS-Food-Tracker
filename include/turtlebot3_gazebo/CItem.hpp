@@ -1,5 +1,5 @@
-#ifndef STOCK_LIST
-#define STOCK_LIST
+#ifndef ITEM
+#define ITEM
 
 #include <string>
 #include <unordered_map>
