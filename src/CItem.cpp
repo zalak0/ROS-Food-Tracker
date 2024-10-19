@@ -3,7 +3,7 @@
 
 CItem::CItem( int aMarkerId )
 : mMarkerId( aMarkerId ),
-  mQuantity( 0 ),
+  mQuantity( 1 ),
   mName( "Unnamed Item" )
 {}
 

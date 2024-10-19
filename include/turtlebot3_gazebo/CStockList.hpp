@@ -10,6 +10,10 @@
 
 #include <string>
 #include <unordered_map>
+#include <iostream>
+#include <fstream>
+#include <filesystem>
+#include <iomanip>
 
 #include "turtlebot3_gazebo/CItem.hpp"
 
@@ -54,6 +58,10 @@ public:
 
     // Exports the current stock to "<mFileName>_<export-time>.txt"
     void WriteToDisk();
+
+    #if TEST == true
+    void TestRecordStockCallback( int aMarkerId );
+    #endif
 
 private:
     // Variables

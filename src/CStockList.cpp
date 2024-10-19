@@ -1,7 +1,5 @@
 #include "turtlebot3_gazebo/CStockList.hpp"
 
-#include <iostream>
-
 
 CStockList::CStockList()
 : mFileName( "stock" ),
@@ -61,26 +59,61 @@ void CStockList::RenameItem( int aMarkerId, std::string aName )
 
 void CStockList::WriteToDisk()
 {   
-    std::cout << "Stock list exported to " << mFileName << ".txt" << std::endl;
+    static const int numColumns = 3;
+    static const int columnWidths[ numColumns ] = {10, 10, 20};
+
+    // Create and open file
+    std::string line;
+    std::string filePath = "../bin/" + mFileName + ".txt";
+    std::ofstream file( filePath );
+
+    if ( !file.is_open() )
+    { 
+        std::cout << "Error: file could not be created." << std::endl;
+    }
+
+    std::ios_base& left( std::ios_base& str );
+
+    // Write file header
+    file << std::left
+         << std::setw( columnWidths[ 0 ] ) << "SKU" << " | "
+         << std::setw( columnWidths[ 1 ] ) << "Quantity" << " | "
+         << std::setw( columnWidths[ 2 ] ) << "Name" << std::endl
+         << std::string( columnWidths[ 0 ], '-' ) << "-|-"
+         << std::string( columnWidths[ 1 ], '-' ) << "-|-"
+         << std::string( columnWidths[ 2 ], '-' ) << std::endl;
+
+    // Write items to file
+    for (std::unordered_map< int, CItem* >::iterator it = mItems.begin(); it != mItems.end(); ++it) {
+        file << std::left
+             << std::setw( columnWidths[ 0 ] ) << it->first << " | "
+             << std::setw( columnWidths[ 1 ] ) << it->second->GetQuantity() << " | "
+             << std::setw( columnWidths[ 2 ] ) << it->second->GetName() << std::endl;
+    }
+
+    std::cout << "Stock list successfully exported to " << mFileName << ".txt" << std::endl;
+
     return;
 }
 
 
 #if TEST == false
 void CStockList::RecordStockCallback( const std_msgs::msg::Integer::SharedPtr msg )
-{   
-    item = RetrieveItem( msg->data );
+#else
+void CStockList::TestRecordStockCallback( int aMarkerId )
+#endif
+{
+    CItem* item = RetrieveItem( aMarkerId );
 
     if( item )
     {
-        item.IncrementQuantity();
+        item->IncrementQuantity();
     }
     else
     {
-        CreateItem( msg.data );
+        CreateItem( aMarkerId );
     }
 }
-#endif
 
 
 void CStockList::CreateItem( int aMarkerId )
