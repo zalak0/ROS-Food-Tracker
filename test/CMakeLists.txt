@@ -16,4 +16,5 @@ add_executable( stock_tests
                 tests.cpp
                 ../src/CItem.cpp
                 ../src/CStockList.cpp
+                ../src/CStockInterface.cpp
 )

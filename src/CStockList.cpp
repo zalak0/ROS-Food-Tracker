@@ -12,7 +12,7 @@ CStockList::CStockList()
     mPubStockUpdate = this->create_publisher<std_msgs::msg::String>( "stock_update", qos );
 
     // Initialise subscribers
-    mScannedMarkerId = this->create_subscription<std_msgs::msg::String>(
+    mSubScannedMarkerId = this->create_subscription<std_msgs::msg::String>(
         "scanned_marker_id", qos, std::bind( &CStockList::RecordStockCallback, this, std::placeholders::_1 ));
     #endif
 }
@@ -29,7 +29,7 @@ CStockList::CStockList( std::string aFilePath )
     mPubStockUpdate = this->create_publisher<std_msgs::msg::String>( "stock_update", qos );
 
     // Initialise subscribers
-    mScannedMarkerId = this->create_subscription<std_msgs::msg::String>(
+    mSubScannedMarkerId = this->create_subscription<std_msgs::msg::String>(
         "scanned_marker_id", qos, std::bind( &CStockList::RecordStockCallback, this, std::placeholders::_1 ));
     #endif
 }
