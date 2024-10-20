@@ -79,6 +79,9 @@ private:
     void RecordStockCallback( const std_msgs::msg::Integer::SharedPtr msg );
     #endif
 
+    // Publishes update information to "stock_update" topic
+    void SendUpdate( eUpdateType aUpdateType, int aMarkerId );
+
     // Creates a new item instance with the specified parameters.
     // @param aMarkerId The ArUco marker id of the item.
     void CreateItem( int aMarkerId );

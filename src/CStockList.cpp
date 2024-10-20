@@ -99,6 +99,19 @@ void CStockList::WriteToDisk()
 
 #if TEST == false
 void CStockList::RecordStockCallback( const std_msgs::msg::Integer::SharedPtr msg )
+{
+    CItem* item = RetrieveItem( msg->data );
+
+    if( item )
+    {
+        item->IncrementQuantity();
+        SendUpdate( QUANTITY, aMarkerId );
+    }
+    else
+    {
+        CreateItem( msg->data );
+    }
+}
 #else
 void CStockList::TestRecordStockCallback( int aMarkerId )
 #endif
@@ -108,6 +121,7 @@ void CStockList::TestRecordStockCallback( int aMarkerId )
     if( item )
     {
         item->IncrementQuantity();
+        SendUpdate( QUANTITY, aMarkerId );
     }
     else
     {
@@ -116,9 +130,34 @@ void CStockList::TestRecordStockCallback( int aMarkerId )
 }
 
 
+void CStockList::SendUpdate( eUpdateType aUpdateType, int aMarkerId )
+{   
+    std::string updateMsg = "Stock Update: Item (SKU: " + std::to_string( aMarkerId ) + ") ";
+    std::string quantity = std::to_string( RetrieveItem( aMarkerId )->GetQuantity() );
+    std::string name = RetrieveItem( aMarkerId )->GetName();
+
+    switch( aUpdateType )
+    {
+        case CREATE:    updateMsg += "created.\n"; break;
+        case DELETE:    updateMsg += "deleted.\n"; break;
+        case QUANTITY:  updateMsg += "quantity changed to " + quantity + "\n"; break;
+        case RENAME:    updateMsg += "renamed to " + name + "\n"; break;
+        default:        updateMsg += "did not update.\n";
+    }
+
+    std::cout << updateMsg;
+
+    #if TEST == false
+    std_msgs::msg::String stockUpdate;
+    mPubStockUpdate->publish( stockUpdate );
+    #endif
+}
+
+
 void CStockList::CreateItem( int aMarkerId )
 {
     mItems[ aMarkerId ] = new CItem( aMarkerId );
+    SendUpdate( CREATE, aMarkerId );
 }
 
 
@@ -139,10 +178,18 @@ CItem* CStockList::RetrieveItem( int aMarkerId )
 
 void CStockList::UpdateItem( int aMarkerId, int aQuantity, std::string aName )
 {   
-    if( RetrieveItem( aMarkerId ))
+    CItem* item = RetrieveItem( aMarkerId );
+
+    if( item && item->GetQuantity() != aQuantity )
+    {   
+        mItems[ aMarkerId ]->SetQuantity( aQuantity );
+        SendUpdate( QUANTITY, aMarkerId );
+    }
+
+    if( item && item->GetName() != aName )
     {   
         mItems[ aMarkerId ]->SetName( aName );
-        mItems[ aMarkerId ]->SetQuantity( aQuantity );
+        SendUpdate( RENAME, aMarkerId );
     }
 }
 
@@ -151,6 +198,7 @@ void CStockList::DeleteItem( int aMarkerId )
 {
     delete RetrieveItem( aMarkerId );
     mItems.erase( aMarkerId );
+    SendUpdate( DELETE, aMarkerId );
 }
 
 
