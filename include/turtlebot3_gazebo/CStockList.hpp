@@ -4,8 +4,9 @@
 #define TEST false
 
 #if TEST == false
-#include "std_msgs/msg/integer.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/int32.hpp"
 #endif
 
 #include <string>
@@ -16,7 +17,6 @@
 #include <iomanip>
 
 #include "turtlebot3_gazebo/CItem.hpp"
-#include "rclcpp/rclcpp.hpp"
 
 
 //---Enumerators---------------------------------------------------------------

@@ -1,11 +1,5 @@
 #include "turtlebot3_gazebo/CArUcoDetector.hpp"
-#include <opencv2/opencv.hpp>
-#include <opencv2/aruco.hpp>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.hpp>
-#include <std_msgs/msg/string.hpp>
-#include <mutex>
-#include <string>
+
 
 // Constructor for CArUcoDetector
 CArUcoDetector::CArUcoDetector()
@@ -16,7 +10,7 @@ CArUcoDetector::CArUcoDetector()
         "/camera/image_raw", 10, std::bind(&CArUcoDetector::ProcessImageCallback, this, std::placeholders::_1));
 
     // Create a publisher to send the detected ArUco markers
-    mPubImageStatus = this->create_publisher<std_msgs::msg::String>("/image_status", 10);
+    mPubScannedMarkerId = this->create_publisher<std_msgs::msg::String>("stock_update", 10);
 
     RCLCPP_INFO(this->get_logger(), "ArUco image processor node initialized");
 }
@@ -87,7 +81,7 @@ void CArUcoDetector::ProcessImageCallback(const sensor_msgs::msg::Image::SharedP
 
     std_msgs::msg::String imageStatusMsg;
     imageStatusMsg.data = numberString;
-    mPubImageStatus->publish(imageStatusMsg);
+    mPubScannedMarkerId->publish(imageStatusMsg);
 }
 
 int main(int argc, char **argv)
