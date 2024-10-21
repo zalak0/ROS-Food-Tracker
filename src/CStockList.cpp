@@ -46,8 +46,17 @@ CStockList::~CStockList()
 
 
 int CStockList::GetQuantity( int aMarkerId )
-{
-    return mItems[ aMarkerId ]->GetQuantity();
+{   
+    CItem* item = mItems[ aMarkerId ];
+
+    if( item )
+    {
+        return mItems[ aMarkerId ]->GetQuantity();
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 

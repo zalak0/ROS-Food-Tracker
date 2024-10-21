@@ -38,23 +38,24 @@ void CStockInterface:: StockUpdateCallback( const std_msgs::msg::String::SharedP
 // Waits for user input via the command line
 void CStockInterface::WaitOnInput()
 {   
-    std::string query;
-    std::string userInput;
+    std::string command;
+    std::string item;
 
-    std::cout << "Welcome to the Stock System Interface" << std::endl
-              << "There is 1 command are available:" << std::endl
-              << " 1. How many <id-or-name> are in stock?" << std::endl;
+    std::cout << "==== Welcome to the Stock System Interface ====" << std::endl
+              << "There is 1 command available:" << std::endl
+              << " 1. stock: <id-or-name>?" << std::endl << std::endl;
 
     while( 1 )
     {
-        std::cin >> userInput;
-        query += userInput + ' ';
+        std::cin >> command;
+        std::cin >> item;
         
-        if( userInput.back() == '?' )
-        {
-            ParseInput( query );
-            query = "";
-        }
+        ParseInput( command + ' ' + item );
+        
+        command = "";
+        item = "";
+
+        std::cout << std::endl << "Ready for next command:" << std::endl;
     }
 }
 
@@ -62,7 +63,31 @@ void CStockInterface::WaitOnInput()
 // Parses user input into the appropriate function calls
 void CStockInterface::ParseInput( std::string aUserInput )
 {
-    std::cout << "Command Received: " << aUserInput << std::endl;
+    std::string command;
+    std::string item;
+
+    std::stringstream ss( aUserInput );
+    ss >> command;
+    ss >> item;
+
+    // Check item is valid
+    int markerId = atoi( item.c_str() );
+
+    if( markerId == 0 )
+    {
+        std::cout << "Error: invalid item id. Check it is a positive integer." << std::endl;
+    }
+
+    // Check command is valid
+    else if( command == "stock:" )  
+    {
+        std::cout << "There are " << std::to_string( CheckQuantity( markerId ) )
+                  << " items (SKU: " << markerId << ") in stock." << std::endl;
+    }
+    else
+    {
+        std::cout << "Error: command not recognised. Check your spelling." << std::endl;
+    }
 }
 
 

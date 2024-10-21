@@ -3,6 +3,8 @@
 
 #include "turtlebot3_gazebo/CStockList.hpp"
 
+#include <sstream>
+
 
 /********************************************************************************
 ** CStockInterface: The object which users interact with to view and modify 
