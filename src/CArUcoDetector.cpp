@@ -27,7 +27,7 @@ int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::Sh
     cv_bridge::CvImagePtr pCv;
 
     try {
-        pCv = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        pCv = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGRA8);
     } catch (cv_bridge::Exception &e) {
         RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
         return -1;  // Return -1 if conversion fails
@@ -46,7 +46,7 @@ int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::Sh
         return -1;
     }
 
-    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
+    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_16h5);
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners;
 
@@ -62,8 +62,8 @@ int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::Sh
 
     // Log and display the detected markers
     RCLCPP_INFO(this->get_logger(), "Detected ArUco ID: %d", detectedId);
-    cv::aruco::drawDetectedMarkers(pCv->image, markerCorners, markerIds);
-    cv::imshow("Detected ArUco Markers", pCv->image);
+    // cv::aruco::drawDetectedMarkers(pCv->image, markerCorners, markerIds);
+    // cv::imshow("Detected ArUco Markers", pCv->image);
     cv::waitKey(1);
 
     return detectedId;
@@ -72,7 +72,7 @@ int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::Sh
 // Callback to process image and detect ArUco markers
 void CArUcoDetector::ProcessImageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
-    static std::string numberString = "";  
+    static std::string numberString;  
     static std::mutex wordMutex;  
 
     {
@@ -80,7 +80,7 @@ void CArUcoDetector::ProcessImageCallback(const sensor_msgs::msg::Image::SharedP
 
         int detectedId = DetectArUcoTagsAndReturnID(msg);
         if (detectedId != -1) {
-            numberString += std::to_string(detectedId);
+            numberString = std::to_string(detectedId);
             RCLCPP_INFO(this->get_logger(), "Current Number String: %s", numberString.c_str());
         }
     }
