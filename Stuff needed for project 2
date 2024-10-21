@@ -1,0 +1,31 @@
+github token -> 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
+
+cd ~/turtlebot3_ws/ && colcon build --symlink-install
+
+source install/setup.bash && source install/setup.sh && source /opt/ros/humble/setup.sh && source /usr/share/gazebo/setup.sh
+
+export TURTLEBOT3_MODEL=burger
+
+ros2 launch turtlebot3_cartographer cartographer.launch.py use_sim_time:=True
+
+Raspberry Pi:
+
+export ROS_DOMAIN_ID=8  # Optional, but helps to prevent network collisions
+export ROS_IP=10.70.139.8  # The static IP you set for the Raspberry Pi
+export ROS_HOSTNAME=10.70.139.8
+
+export TURTLEBOT3_MODEL=burger
+
+ros2 launch turtlebot3_bringup robot.launch.py
+
+
+Remote PC:
+
+export ROS_DOMAIN_ID=8  # Ensure this matches with the TurtleBot3
+export ROS_IP=10.170.3.236 # The IP address of your PC
+export ROS_HOSTNAME=10.170.3.236
+export ROS_MASTER_URI=http://192.168.4.1:11311
+
+export TURTLEBOT3_MODEL=burger
+
+ros2 run turtlebot3_teleop teleop_keyboard
