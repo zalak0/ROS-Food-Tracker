@@ -10,14 +10,14 @@
 
 
 /********************************************************************************
-** CImageProcessor: The class which analyses the frames published by the camera
+** CArUcoDetector: The class which analyses the frames published by the camera
 **                  driver, publishing whether the correct colour in a sufficient
 **                  quantity has been detected (indicates the maze end-zone).
 ********************************************************************************/
-class CImageProcessor : public rclcpp::Node
+class CArUcoDetector : public rclcpp::Node
 {
 public:
-    CImageProcessor();
+    CArUcoDetector();
 
 private:
     // Constants
