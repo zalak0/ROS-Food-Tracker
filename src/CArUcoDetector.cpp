@@ -112,7 +112,7 @@ void CArUcoDetector::ProcessImageCallback(const sensor_msgs::msg::Image::SharedP
 int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<CImageProcessor>());
+    rclcpp::spin(std::make_shared<CArUcoDetector>());
     rclcpp::shutdown();
     return 0;
 }
