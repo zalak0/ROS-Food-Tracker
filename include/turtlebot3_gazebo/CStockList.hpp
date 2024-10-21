@@ -1,7 +1,7 @@
 #ifndef STOCK_LIST
 #define STOCK_LIST
 
-#define TEST true
+#define TEST false
 
 #if TEST == false
 #include <std_msgs/msg/integer.hpp> 

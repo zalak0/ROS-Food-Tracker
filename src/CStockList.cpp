@@ -158,6 +158,7 @@ void CStockList::SendUpdate( eUpdateType aUpdateType, int aMarkerId )
 
     #if TEST == false
     std_msgs::msg::String stockUpdate;
+    stockUpdate->data = updateMsg;
     mPubStockUpdate->publish( stockUpdate );
     #endif
 }
