@@ -1,4 +1,9 @@
 #include "turtlebot3_gazebo/CImageProcessor.hpp"
+#include <opencv2/opencv.hpp>
+#include <opencv2/aruco.hpp>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <mutex>  // For thread safety
 #include <string> // For std::to_string
 
@@ -31,11 +36,23 @@ int CImageProcessor::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::S
         return -1;  // Return -1 if conversion fails
     }
 
+    // Check if the image is empty
+    if (pCv->image.empty()) {
+        RCLCPP_ERROR(this->get_logger(), "Empty image received from the camera.");
+        return -1;
+    }
+
     // Convert the BGR image to grayscale (ArUco detection works better in grayscale)
     cv::Mat grayImage;
     cv::cvtColor(pCv->image, grayImage, cv::COLOR_BGR2GRAY);
 
+    if (grayImage.empty()) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to convert image to grayscale.");
+        return -1;
+    }
+
     // --- ArUco detection setup ---
+    // You can use other dictionaries such as DICT_4X4_50 or DICT_4X4_100 if needed.
     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
     std::vector<int> markerIds;
     std::vector<std::vector<cv::Point2f>> markerCorners;
@@ -56,16 +73,23 @@ int CImageProcessor::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::S
     // Log the detected ID
     RCLCPP_INFO(this->get_logger(), "Detected ArUco ID: %d", detectedId);
 
+    // Draw the detected markers on the image for debugging
+    cv::aruco::drawDetectedMarkers(pCv->image, markerCorners, markerIds);
+
+    // Display the result (optional, for debugging purposes)
+    cv::imshow("Detected ArUco Markers", pCv->image);
+    cv::waitKey(1);
+
     return detectedId;
 }
 
+// Callback function to process the received image and detect ArUco markers
 void CImageProcessor::ProcessImageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
     static std::string numberString = "";  // Holds the current number string
     static std::mutex wordMutex;           // Mutex to ensure thread safety
 
     {
-        // Lock the mutex to ensure thread-safe access to the numberString
         std::lock_guard<std::mutex> lock(wordMutex);
 
         // Detect ArUco tag and get the numeric ID
