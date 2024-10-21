@@ -1,5 +1,6 @@
 #include "turtlebot3_gazebo/CImageProcessor.hpp"
 #include <mutex>  // For thread safety
+#include <string> // For std::to_string
 
 CImageProcessor::CImageProcessor()
 : Node("image_processor")
@@ -8,14 +9,14 @@ CImageProcessor::CImageProcessor()
     mSubImage = this->create_subscription<sensor_msgs::msg::Image>(
         "/camera/image_raw", 10, std::bind(&CImageProcessor::ProcessImageCallback, this, std::placeholders::_1));
 
-    // Create a publisher to send the ASCII word based on detected tags
+    // Create a publisher to send the number-based word based on detected tags
     mPubImageStatus = this->create_publisher<std_msgs::msg::String>("/image_status", 10);
 
     RCLCPP_INFO(this->get_logger(), "Maze image processor node has been initialised");
 }
 
-// Helper function to detect ArUco tags and convert their IDs to ASCII characters
-char CImageProcessor::DetectArUcoTagsAndConvertToASCII(const sensor_msgs::msg::Image::SharedPtr msg)
+// Helper function to detect ArUco tags and return their IDs as numbers
+int CImageProcessor::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::SharedPtr msg)
 {
     // Convert the ROS image message to an OpenCV image
     cv_bridge::CvImagePtr pCv;
@@ -27,7 +28,7 @@ char CImageProcessor::DetectArUcoTagsAndConvertToASCII(const sensor_msgs::msg::I
     catch (cv_bridge::Exception &e)
     {
         RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
-        return '\0';  // Return null character if conversion fails
+        return -1;  // Return -1 if conversion fails
     }
 
     // Convert the BGR image to grayscale (ArUco detection works better in grayscale)
@@ -42,52 +43,45 @@ char CImageProcessor::DetectArUcoTagsAndConvertToASCII(const sensor_msgs::msg::I
     // Detect ArUco markers in the image
     cv::aruco::detectMarkers(grayImage, dictionary, markerCorners, markerIds);
 
-    // If no markers are found, return null character
+    // If no markers are found, return -1
     if (markerIds.empty())
     {
         RCLCPP_INFO(this->get_logger(), "No ArUco markers detected.");
-        return '\0';
+        return -1;
     }
 
     // Assuming we are only interested in the first detected ArUco marker's ID
     int detectedId = markerIds[0];
 
-    // --- Convert detected ArUco marker ID to ASCII ---
-    if (detectedId < 32 || detectedId > 126)  // Only valid for printable ASCII characters (32-126)
-    {
-        RCLCPP_WARN(this->get_logger(), "Marker ID %d is not a printable ASCII character.", detectedId);
-        return '\0';
-    }
+    // Log the detected ID
+    RCLCPP_INFO(this->get_logger(), "Detected ArUco ID: %d", detectedId);
 
-    char asciiChar = static_cast<char>(detectedId);
-    RCLCPP_INFO(this->get_logger(), "Detected ArUco ID: %d, ASCII Character: %c", detectedId, asciiChar);
-
-    return asciiChar;
+    return detectedId;
 }
 
 void CImageProcessor::ProcessImageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
-    static std::string asciiWord = "";  // Holds the current ASCII word
-    static std::mutex wordMutex;        // Mutex to ensure thread safety
+    static std::string numberString = "";  // Holds the current number string
+    static std::mutex wordMutex;           // Mutex to ensure thread safety
 
     {
-        // Lock the mutex to ensure thread-safe access to the asciiWord
+        // Lock the mutex to ensure thread-safe access to the numberString
         std::lock_guard<std::mutex> lock(wordMutex);
 
-        // Detect ArUco tag and get the ASCII character
-        char asciiChar = DetectArUcoTagsAndConvertToASCII(msg);
+        // Detect ArUco tag and get the numeric ID
+        int detectedId = DetectArUcoTagsAndReturnID(msg);
 
-        // Append the character to the word if a valid ASCII character was detected
-        if (asciiChar != '\0')
+        // Append the numeric ID to the string if a valid marker ID was detected
+        if (detectedId != -1)
         {
-            asciiWord += asciiChar;
-            RCLCPP_INFO(this->get_logger(), "Current ASCII Word: %s", asciiWord.c_str());
+            numberString += std::to_string(detectedId);  // Convert the ID to a string and append it
+            RCLCPP_INFO(this->get_logger(), "Current Number String: %s", numberString.c_str());
         }
     }
 
-    // Publish the current word as the status message
+    // Publish the current number string as the status message
     std_msgs::msg::String imageStatusMsg;
-    imageStatusMsg.data = asciiWord;
+    imageStatusMsg.data = numberString;
     mPubImageStatus->publish(imageStatusMsg);
 }
 
