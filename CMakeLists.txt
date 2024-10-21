@@ -81,13 +81,6 @@ ament_target_dependencies(CArUcoDetector
   cv_bridge
 )
 
-add_executable(CStockList src/CStockList.cpp)
-
-ament_target_dependencies(CStockList
-  rclcpp
-  std_msgs
-)
-
 target_link_libraries(CArUcoDetector ${OpenCV_LIBRARIES})
 
 ################################################################################
@@ -97,9 +90,6 @@ install(TARGETS ${EXEC_NAME} CArUcoDetector
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(TARGETS ${EXEC_NAME} CStockList
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 install(DIRECTORY launch models rviz urdf worlds
   DESTINATION share/${PROJECT_NAME}/
