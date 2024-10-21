@@ -11,6 +11,9 @@
 **                  stock.
 ********************************************************************************/
 class CStockInterface
+#if TEST == false
+: public rclcpp::Node
+#endif
 {
 public:
     CStockInterface();
