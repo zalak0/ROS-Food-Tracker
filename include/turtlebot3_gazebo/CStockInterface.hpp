@@ -3,6 +3,10 @@
 
 #include "turtlebot3_gazebo/CStockList.hpp"
 
+#if TEST = false
+#include "std_msgs/msg/string.hpp"
+#endif
+
 #include <sstream>
 
 
