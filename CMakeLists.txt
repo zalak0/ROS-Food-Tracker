@@ -83,16 +83,10 @@ ament_target_dependencies(CArUcoDetector
 
 add_executable(CStockList src/CStockList.cpp)
 
-# ament_target_dependencies(CStockList
-#   rclcpp
-#   std_msgs
-#   string
-#   unordered_map
-#   iostream
-#   fstream
-#   filesystem
-#   iomanip
-# )
+ament_target_dependencies(CStockList
+  rclcpp
+  std_msgs
+)
 
 target_link_libraries(CArUcoDetector ${OpenCV_LIBRARIES})
 
