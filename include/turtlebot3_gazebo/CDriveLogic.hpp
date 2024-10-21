@@ -43,7 +43,7 @@ private:
 
     // Constants
     static const int mNumScans = 2;         // The number of scan ranges to store
-    const double mLinearVelocity = 0.25;    // Linear velocity to travel at
+    const double mLinearVelocity = 0.1;    // Linear velocity to travel at
     const double mAngularVelocity = 1.5;    // Angular velocity to travel at
 
     // Variables
