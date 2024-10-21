@@ -106,7 +106,7 @@ void CDriveLogic::UpdateVelocityCommand( double linear, double angular )
 ********************************************************************************/
 void CDriveLogic::GetCommandCallback()
 {
-    double targetDist = 0.5;  // Target distance the bot maintains from the wall
+    double targetDist = 0.1;  // Target distance the bot maintains from the wall
     double minDist = 0.3;     // Minimum distance to object in front of bot
 
     if( mGoalReached )
