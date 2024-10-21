@@ -1,5 +1,5 @@
 ################################################################################
-# Set minimum required version of cmake, project name and compile options
+# Set minimum required version of cmake, project name, and compile options
 ################################################################################
 cmake_minimum_required(VERSION 3.5)
 project(turtlebot3_gazebo)
@@ -18,7 +18,6 @@ endif()
 
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1)
 
-
 ################################################################################
 # Find ament packages and libraries for ament and system dependencies
 ################################################################################
@@ -33,8 +32,6 @@ find_package(tf2 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(cv_bridge REQUIRED)
 
-
-
 ################################################################################
 # Build
 ################################################################################
@@ -45,6 +42,7 @@ link_directories(
 include_directories(
   include
   ${GAZEBO_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 set(dependencies
@@ -53,13 +51,16 @@ set(dependencies
   "rclcpp"
   "sensor_msgs"
   "tf2"
+  "cv_bridge"
 )
 
 set(EXEC_NAME "CDriveLogic")
 
+# Add executable for CDriveLogic
 add_executable(${EXEC_NAME} src/CDriveLogic.cpp)
 ament_target_dependencies(${EXEC_NAME} ${dependencies})
 
+# Add library for obstacles
 add_library(obstacle1 SHARED models/turtlebot3_dqn_world/obstacle_plugin/obstacle1.cc)
 target_link_libraries(obstacle1 ${GAZEBO_LIBRARIES})
 
@@ -69,24 +70,22 @@ target_link_libraries(obstacle2 ${GAZEBO_LIBRARIES})
 add_library(obstacles SHARED models/turtlebot3_dqn_world/obstacle_plugin/obstacles.cc)
 target_link_libraries(obstacles ${GAZEBO_LIBRARIES})
 
-add_executable(CImageProcessor src/CImageProcessor.cpp)
+# Add executable for CArUcoDetector
+add_executable(CArUcoDetector src/CArUcoDetector.cpp)
 
-ament_target_dependencies(CImageProcessor
+ament_target_dependencies(CArUcoDetector
   rclcpp
   sensor_msgs
   std_msgs
   cv_bridge
 )
 
-target_link_libraries(CImageProcessor ${OpenCV_LIBRARIES})
-
-install(TARGETS CImageProcessor
-  DESTINATION lib/${PROJECT_NAME})
+target_link_libraries(CArUcoDetector ${OpenCV_LIBRARIES})
 
 ################################################################################
 # Install
 ################################################################################
-install(TARGETS ${EXEC_NAME}
+install(TARGETS ${EXEC_NAME} CArUcoDetector
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -109,3 +108,4 @@ ament_export_dependencies(rclcpp)
 ament_export_dependencies(sensor_msgs)
 ament_export_dependencies(tf2)
 ament_package()
+
