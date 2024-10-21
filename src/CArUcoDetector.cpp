@@ -1,4 +1,4 @@
-#include "turtlebot3_gazebo/CImageProcessor.hpp"
+#include "turtlebot3_gazebo/CArUcoDetector.hpp"
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
 #include <cv_bridge/cv_bridge.h>
@@ -7,12 +7,12 @@
 #include <mutex>  // For thread safety
 #include <string> // For std::to_string
 
-CImageProcessor::CImageProcessor()
-: Node("image_processor")
+CArUcoDetector::CArUcoDetector()
+: Node("aruco_detector")
 {
     // Create a subscriber to the camera image topic
     mSubImage = this->create_subscription<sensor_msgs::msg::Image>(
-        "/camera/image_raw", 10, std::bind(&CImageProcessor::ProcessImageCallback, this, std::placeholders::_1));
+        "/camera/image_raw", 10, std::bind(&CArUcoDetector::ProcessImageCallback, this, std::placeholders::_1));
 
     // Create a publisher to send the number-based word based on detected tags
     mPubImageStatus = this->create_publisher<std_msgs::msg::String>("/image_status", 10);
@@ -20,8 +20,8 @@ CImageProcessor::CImageProcessor()
     RCLCPP_INFO(this->get_logger(), "Maze image processor node has been initialised");
 }
 
-// Helper function to detect ArUco tags and return their IDs as numbers
-int CImageProcessor::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::SharedPtr msg)
+// Helper function to detect ArUco tags and return their IDs as integers
+int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::SharedPtr msg)
 {
     // Convert the ROS image message to an OpenCV image
     cv_bridge::CvImagePtr pCv;
