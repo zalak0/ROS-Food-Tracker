@@ -16,6 +16,7 @@
 #include <iomanip>
 
 #include "turtlebot3_gazebo/CItem.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 
 //---Enumerators---------------------------------------------------------------

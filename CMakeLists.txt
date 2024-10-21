@@ -48,6 +48,7 @@ include_directories(
 set(dependencies
   "geometry_msgs"
   "nav_msgs"
+  "std_msgs"
   "rclcpp"
   "sensor_msgs"
   "tf2"
@@ -80,12 +81,29 @@ ament_target_dependencies(CArUcoDetector
   cv_bridge
 )
 
+add_executable(CStockList src/CStockList.cpp)
+
+# ament_target_dependencies(CStockList
+#   rclcpp
+#   std_msgs
+#   string
+#   unordered_map
+#   iostream
+#   fstream
+#   filesystem
+#   iomanip
+# )
+
 target_link_libraries(CArUcoDetector ${OpenCV_LIBRARIES})
 
 ################################################################################
 # Install
 ################################################################################
 install(TARGETS ${EXEC_NAME} CArUcoDetector
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS ${EXEC_NAME} CStockList
   DESTINATION lib/${PROJECT_NAME}
 )
 
