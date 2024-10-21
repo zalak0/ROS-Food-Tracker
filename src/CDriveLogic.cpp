@@ -38,7 +38,12 @@ CDriveLogic::CDriveLogic()
 
 
 CDriveLogic::~CDriveLogic()
-{
+{   
+    geometry_msgs::msg::Twist cmd_vel;
+    cmd_vel.linear.x = 0;
+    cmd_vel.angular.z = 0;
+    mPubCommandVelocity->publish( cmd_vel );
+    
     RCLCPP_INFO( this->get_logger(), "Turtlebot3 simulation node has been terminated" );
 }
 
