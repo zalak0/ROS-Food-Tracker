@@ -84,7 +84,7 @@ int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::Sh
 }
 
 // Callback function to process the received image and detect ArUco markers
-void CImageProcessor::ProcessImageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
+void CArUcoDetector::ProcessImageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
     static std::string numberString = "";  // Holds the current number string
     static std::mutex wordMutex;           // Mutex to ensure thread safety
