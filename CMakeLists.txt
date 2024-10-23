@@ -81,6 +81,13 @@ ament_target_dependencies(CArUcoDetector
   cv_bridge
 )
 
+add_executable(CStockList src/CStockList.cpp src/CItem.cpp)
+
+ament_target_dependencies(CStockList
+  rclcpp
+  std_msgs
+)
+
 target_link_libraries(CArUcoDetector ${OpenCV_LIBRARIES})
 
 ################################################################################

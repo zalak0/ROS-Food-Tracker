@@ -4,8 +4,9 @@
 #define TEST false
 
 #if TEST == false
-#include "std_msgs/msg/integer.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/int32.hpp"
 #endif
 
 #include <string>
@@ -16,7 +17,6 @@
 #include <iomanip>
 
 #include "turtlebot3_gazebo/CItem.hpp"
-#include "rclcpp/rclcpp.hpp"
 
 
 //---Enumerators---------------------------------------------------------------
@@ -67,17 +67,17 @@ public:
 private:
     // Variables
     std::string mFileName;                      // The path which stock export to
-    std::unordered_map< int, CItem* > mItems;    // Map from ArUco id to item objects
+    std::unordered_map< int, CItem* > mItems;   // Map from ArUco id to item objects
 
     #if TEST == false
     // ROS topic publishers
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr mPubStockUpdate;
 
     // ROS topic subscribers
-    rclcpp::Subscription<std_msgs::msg::Integer>::SharedPtr mSubScannedMarkerId;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr mSubScannedMarkerId;
 
     // ROS subscriber callback updates stock record when new ArUco marker is scanned.
-    void RecordStockCallback( const std_msgs::msg::Integer::SharedPtr msg );
+    void RecordStockCallback( const std_msgs::msg::Int32::SharedPtr msg );
     #endif
 
     // Publishes update information to "stock_update" topic
@@ -104,7 +104,7 @@ private:
 
     // Initialises variables from stock export file.
     // @param aFilePath The path of the stock export file.
-    void LoadFile( std::string aFilePath );
+    // void LoadFile( std::string aFilePath );
 };
 
 #endif

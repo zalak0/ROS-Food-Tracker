@@ -1,9 +1,10 @@
 #include "turtlebot3_gazebo/CStockList.hpp"
+#include "turtlebot3_gazebo/CItem.hpp"
 
 
 CStockList::CStockList()
-: mFileName( "stock" ),
-  mItems()
+: Node( "stock_list" ),
+  mFileName( "stock" )
 {   
     #if TEST == false
     auto qos = rclcpp::QoS( rclcpp::KeepLast(10) );
@@ -12,15 +13,15 @@ CStockList::CStockList()
     mPubStockUpdate = this->create_publisher<std_msgs::msg::String>( "stock_update", qos );
 
     // Initialise subscribers
-    mSubScannedMarkerId = this->create_subscription<std_msgs::msg::String>(
+    mSubScannedMarkerId = this->create_subscription<std_msgs::msg::Int32>(
         "scanned_marker_id", qos, std::bind( &CStockList::RecordStockCallback, this, std::placeholders::_1 ));
     #endif
 }
 
 
 CStockList::CStockList( std::string aFilePath )
-: mFileName( aFilePath ),
-  mItems()
+: Node( "stock_list" ),
+  mFileName( aFilePath )
 {   
     #if TEST == false
     auto qos = rclcpp::QoS( rclcpp::KeepLast(10) );
@@ -29,7 +30,7 @@ CStockList::CStockList( std::string aFilePath )
     mPubStockUpdate = this->create_publisher<std_msgs::msg::String>( "stock_update", qos );
 
     // Initialise subscribers
-    mSubScannedMarkerId = this->create_subscription<std_msgs::msg::String>(
+    mSubScannedMarkerId = this->create_subscription<std_msgs::msg::Int32>(
         "scanned_marker_id", qos, std::bind( &CStockList::RecordStockCallback, this, std::placeholders::_1 ));
     #endif
 }
@@ -107,14 +108,14 @@ void CStockList::WriteToDisk()
 
 
 #if TEST == false
-void CStockList::RecordStockCallback( const std_msgs::msg::Integer::SharedPtr msg )
+void CStockList::RecordStockCallback( const std_msgs::msg::Int32::SharedPtr msg )
 {
     CItem* item = RetrieveItem( msg->data );
 
     if( item )
     {
         item->IncrementQuantity();
-        SendUpdate( QUANTITY, aMarkerId );
+        SendUpdate( QUANTITY, msg->data );
     }
     else
     {
@@ -123,7 +124,6 @@ void CStockList::RecordStockCallback( const std_msgs::msg::Integer::SharedPtr ms
 }
 #else
 void CStockList::TestRecordStockCallback( int aMarkerId )
-#endif
 {
     CItem* item = RetrieveItem( aMarkerId );
 
@@ -137,6 +137,7 @@ void CStockList::TestRecordStockCallback( int aMarkerId )
         CreateItem( aMarkerId );
     }
 }
+#endif
 
 
 void CStockList::SendUpdate( eUpdateType aUpdateType, int aMarkerId )
@@ -158,7 +159,7 @@ void CStockList::SendUpdate( eUpdateType aUpdateType, int aMarkerId )
 
     #if TEST == false
     std_msgs::msg::String stockUpdate;
-    stockUpdate->data = updateMsg;
+    stockUpdate.data = updateMsg;
     mPubStockUpdate->publish( stockUpdate );
     #endif
 }
@@ -212,7 +213,10 @@ void CStockList::DeleteItem( int aMarkerId )
 }
 
 
-void CStockList::LoadFile( std::string aFilePath )
+int main(int argc, char **argv)
 {
-    return;
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<CStockList>());
+    rclcpp::shutdown();
+    return 0;
 }
