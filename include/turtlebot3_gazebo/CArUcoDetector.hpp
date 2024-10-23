@@ -9,7 +9,6 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
-#include <string>
 #include <mutex>
 
 /********************************************************************************

@@ -10,7 +10,7 @@ CArUcoDetector::CArUcoDetector()
         "/camera/image_raw/compressed", 10, std::bind(&CArUcoDetector::ProcessImageCallback, this, std::placeholders::_1));
 
     // Create a publisher to send the detected ArUco markers
-    mPubScannedMarkerId = this->create_publisher<std_msgs::msg::String>("stock_update", 10);
+    mPubScannedMarkerId = this->create_publisher<std_msgs::msg::Int32>("scanned_marker_id", 10);
 
     RCLCPP_INFO(this->get_logger(), "ArUco image processor node initialized");
 }
@@ -56,8 +56,6 @@ int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::Sh
 
     // Log and display the detected markers
     RCLCPP_INFO(this->get_logger(), "Detected ArUco ID: %d", detectedId);
-    // cv::aruco::drawDetectedMarkers(pCv->image, markerCorners, markerIds);
-    // cv::imshow("Detected ArUco Markers", pCv->image);
     cv::waitKey(1);
 
     return detectedId;
@@ -66,22 +64,20 @@ int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::Sh
 // Callback to process image and detect ArUco markers
 void CArUcoDetector::ProcessImageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
-    static std::string numberString;  
     static std::mutex wordMutex;  
+    int detectedId = -1;
 
     {
         std::lock_guard<std::mutex> lock(wordMutex);
 
-        int detectedId = DetectArUcoTagsAndReturnID(msg);
-        if (detectedId != -1) {
-            numberString = std::to_string(detectedId);
-            RCLCPP_INFO(this->get_logger(), "Current Number String: %s", numberString.c_str());
-        }
+        detectedId = DetectArUcoTagsAndReturnID(msg);
     }
 
-    std_msgs::msg::String imageStatusMsg;
-    imageStatusMsg.data = numberString;
-    mPubScannedMarkerId->publish(imageStatusMsg);
+    if (detectedId != -1) {
+        std_msgs::msg::Int32 scannedTagMsg;
+        scannedTagMsg.data = detectedId;
+        mPubScannedMarkerId->publish(scannedTagMsg);
+    }    
 }
 
 int main(int argc, char **argv)
