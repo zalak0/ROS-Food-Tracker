@@ -7,7 +7,7 @@ CArUcoDetector::CArUcoDetector()
 {
     // Create a subscriber to the camera image topic
     mSubImage = this->create_subscription<sensor_msgs::msg::Image>(
-        "/camera/image_raw", 10, std::bind(&CArUcoDetector::ProcessImageCallback, this, std::placeholders::_1));
+        "/camera/image_raw/compressed", 10, std::bind(&CArUcoDetector::ProcessImageCallback, this, std::placeholders::_1));
 
     // Create a publisher to send the detected ArUco markers
     mPubScannedMarkerId = this->create_publisher<std_msgs::msg::String>("stock_update", 10);
