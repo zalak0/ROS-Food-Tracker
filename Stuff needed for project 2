@@ -1,22 +1,14 @@
 ssh ubuntu@10.42.0.1
 
-cd ~/turtlebot3_ws/ && colcon build --symlink-install
-
-source install/setup.bash && source install/setup.sh && source /opt/ros/humble/setup.sh && source /usr/share/gazebo/setup.sh
-
 Raspberry Pi:
 
-export ROS_DOMAIN_ID=8  # Optional, but helps to prevent network collisions
-export TURTLEBOT3_MODEL=burger
-
-ros2 launch turtlebot3_bringup robot.launch.py
+export ROS_DOMAIN_ID=8  && export TURTLEBOT3_MODEL=burger && ros2 launch turtlebot3_bringup robot.launch.py
 
 ros2 run camera_ros camera_node --ros-args -p format:=BGR888 -p width:=640 -p height:=480
 
 Remote PC:
 
-export ROS_DOMAIN_ID=8  # Ensure this matches with the TurtleBot3
-export TURTLEBOT3_MODEL=burger
+cd ~/turtlebot3_ws/ && colcon build --symlink-install && source install/setup.bash && source install/setup.sh && source /opt/ros/humble/setup.sh && source /usr/share/gazebo/setup.sh && export ROS_DOMAIN_ID=8  # Ensure this matches with the TurtleBot3 && export TURTLEBOT3_MODEL=burger
 
 ros2 run turtlebot3_teleop teleop_keyboard
 
@@ -28,4 +20,16 @@ ros2 run turtlebot3_gazebo CArUcoDetector
 
 ros2 run turtlebot3_gazebo CDriveLogic
 
-ros2 launch turtlebot3_gazebo turtlebot3_bringup.launch.py use_sim_time:=true
+ros2 launch turtlebot3_gazebo turtlebot3_bringup.launch.py 
+
+
+ros2 launch slam_toolbox online_async_launch.py use_sim_time:=false
+
+ros2 launch nav2_bringup navigation_launch.py params_file:=/home/varun/turtlebot3_ws/src/turtlebot3_simulations/turtlebot3_gazebo/config/nav2_params.yaml use_sim_time:=false
+
+ros2 run explore_lite explore
+
+
+[turtlebot3_ros-3] [ERROR] [1729829047.013813413] [DynamixelSDKWrapper]: Failed to read[[TxRxResult] There is no status packet!]
+
+

@@ -10,35 +10,31 @@ from launch.actions import TimerAction
 def generate_launch_description():
     
     config_dir = os.path.join(get_package_share_directory('turtlebot3_gazebo'), 'config')
-    params_file = os.path.join(config_dir, 'nav2_params.yaml' )
-    rviz_config= os.path.join( get_package_share_directory('turtlebot3_navigation2'), 'rviz', 'tb3_navigation2.rviz' )
+    params_file = os.path.join(config_dir, 'nav2_params.yaml')
+    rviz_config = os.path.join(get_package_share_directory('turtlebot3_navigation2'), 'rviz', 'tb3_navigation2.rviz')
 
-    # launch_file_dir = os.path.join(get_package_share_directory('world_sim'), 'launch')f
+    use_sim_time = LaunchConfiguration('use_sim_time', default='False')  # Set to False for real robot use
 
-    use_sim_time = LaunchConfiguration('use_sim_time', default='False')  # Changed to false for real robot
-
-    # Launch slam_toolbox
+    # Launch SLAM toolbox
     slam_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('slam_toolbox'), 'launch', 'online_async_launch.py')
         ),
-        launch_arguments={
-            'use_sim_time': use_sim_time  # Added use_sim_time for real robot
-        }.items(),
+        launch_arguments={'use_sim_time': use_sim_time}.items(),
     )
 
-    # Launch nav2
+    # Launch Nav2
     nav_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory('nav2_bringup'), 'launch', 'navigation_launch.py')
         ),
         launch_arguments={
             'params_file': params_file,
-            'use_sim_time': use_sim_time  # Added use_sim_time for real robot
+            'use_sim_time': use_sim_time
         }.items(),
     )
 
-    # Launch rviz
+    # Launch RViz
     rviz = Node(
         package='rviz2',
         output='screen',
@@ -63,8 +59,17 @@ def generate_launch_description():
         name='CArUcoDetector_node'
     )
 
+    # Launch Custom Drive Logic (CDriveLogic)
+    drive_logic = Node(
+        package='turtlebot3_gazebo',
+        output='screen',
+        executable='CDriveLogic',
+        name='turtlebot3_drive_node'
+    )
+
     ld = LaunchDescription()
 
+    # Launch Nav2 immediately
     ld.add_action(
         TimerAction(
             period=0.0,
@@ -72,6 +77,7 @@ def generate_launch_description():
         )
     )
 
+    # Launch SLAM after 5 seconds
     ld.add_action(
         TimerAction(
             period=5.0,
@@ -79,25 +85,37 @@ def generate_launch_description():
         )
     )
 
+    # Launch Custom Drive Logic after SLAM (10 seconds)
     ld.add_action(
         TimerAction(
-            period=5.0,
+            period=10.0,
+            actions=[drive_logic]
+        )
+    )
+
+    # Launch Stock System after 12 seconds
+    ld.add_action(
+        TimerAction(
+            period=12.0,
             actions=[stock_system]
         )
     )
 
+    # Launch Tag Detector after 14 seconds
     ld.add_action(
         TimerAction(
-            period=5.0,
+            period=14.0,
             actions=[tag_detector]
         )
     )
 
+    # Launch RViz after 15 seconds (gives enough time for Nav2 and SLAM to initialize)
     ld.add_action(
         TimerAction(
-            period=10.0,
+            period=15.0,
             actions=[rviz]
         )
     )
 
     return ld
+

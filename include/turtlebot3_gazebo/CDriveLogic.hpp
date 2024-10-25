@@ -10,7 +10,6 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 
-
 /********************************************************************************
 ** Enumerators
 ********************************************************************************/
@@ -39,12 +38,14 @@ public:
 private:
     void ImageStatusCallback(const std_msgs::msg::String::SharedPtr msg);
     void ScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+    void Nav2CmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg); // NEW: Nav2 cmd_vel callback
     void UpdateVelocityCommand(double linear, double angular);
     void GetCommandCallback();
 
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr mPubCommandVelocity;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr mSubScan;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr mSubMazeSolved;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr mSubNav2CmdVel;  // NEW: Subscribe to Nav2 cmd_vel
     rclcpp::TimerBase::SharedPtr mUpdateTimer;
 
     double mScanData[mNumScans];  // Holds scan data (FRONT, LEFT)
@@ -52,12 +53,17 @@ private:
     bool mSeekGoal;
 
     // New member variables for distance tracking and turning logic
-    double mDistanceTraveled;
-    double mPrevScanRange;
-    bool mPerformTurn;
-    double mTurnAngle;
+    double mDistanceTraveled;    // Accumulated total distance traveled from the start
+    double mLastStopDistance;    // Distance at the last stop point
+    double mPrevScanRange;       // Previous scan range for calculating the delta
+    bool mPerformTurn;           // Flag to check if the robot is in turn mode
+    double mTurnAngle;           // Current turn angle during a 360-degree turn
 
-    const double mLinearVelocity = 0.2;   // Example linear velocity
-    const double mAngularVelocity = 0.5;  // Example angular velocity
+    // NEW: Hold Nav2 velocity command
+    double mNav2LinearVel;
+    double mNav2AngularVel;
+
+    const double mLinearVelocity = 0.1;   // Example linear velocity
+    const double mAngularVelocity = 0.2;  // Example angular velocity
 };
 #endif  // TURTLEBOT3_GAZEBO__DRIVE_LOGIC
