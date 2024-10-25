@@ -97,8 +97,11 @@ install(TARGETS ${EXEC_NAME} CArUcoDetector
   DESTINATION lib/${PROJECT_NAME}
 )
 
+install(TARGETS ${EXEC_NAME} CStockList
+  DESTINATION lib/${PROJECT_NAME}
+)
 
-install(DIRECTORY launch models rviz urdf worlds
+install(DIRECTORY launch models rviz urdf worlds config
   DESTINATION share/${PROJECT_NAME}/
 )
 

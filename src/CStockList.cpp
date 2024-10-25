@@ -15,6 +15,8 @@ CStockList::CStockList()
     // Initialise subscribers
     mSubScannedMarkerId = this->create_subscription<std_msgs::msg::Int32>(
         "scanned_marker_id", qos, std::bind( &CStockList::RecordStockCallback, this, std::placeholders::_1 ));
+    
+    RCLCPP_INFO(this->get_logger(), "Stock List Node Initialised");
     #endif
 }
 
@@ -32,6 +34,8 @@ CStockList::CStockList( std::string aFilePath )
     // Initialise subscribers
     mSubScannedMarkerId = this->create_subscription<std_msgs::msg::Int32>(
         "scanned_marker_id", qos, std::bind( &CStockList::RecordStockCallback, this, std::placeholders::_1 ));
+    
+    RCLCPP_INFO(this->get_logger(), "Stock List Node Initialised");
     #endif
 }
 
@@ -43,6 +47,8 @@ CStockList::~CStockList()
     }
 
     mItems.clear();
+
+    RCLCPP_INFO(this->get_logger(), "Stock List Node Destroyed");
 }
 
 
@@ -161,6 +167,8 @@ void CStockList::SendUpdate( eUpdateType aUpdateType, int aMarkerId )
     std_msgs::msg::String stockUpdate;
     stockUpdate.data = updateMsg;
     mPubStockUpdate->publish( stockUpdate );
+
+    RCLCPP_INFO(this->get_logger(), updateMsg.c_str());
     #endif
 }
 

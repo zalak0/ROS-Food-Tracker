@@ -9,10 +9,11 @@ from launch.actions import TimerAction
 
 def generate_launch_description():
     
-    params_file = os.path.join( 'config', 'nav2_params.yaml' )
-    rviz_config= os.path.join( 'rviz', 'tb3_nav.rviz' )
+    config_dir = os.path.join(get_package_share_directory('turtlebot3_gazebo'), 'config')
+    params_file = os.path.join(config_dir, 'nav2_params.yaml' )
+    rviz_config= os.path.join( get_package_share_directory('turtlebot3_navigation2'), 'rviz', 'tb3_navigation2.rviz' )
 
-    # launch_file_dir = os.path.join(get_package_share_directory('world_sim'), 'launch')
+    # launch_file_dir = os.path.join(get_package_share_directory('world_sim'), 'launch')f
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='False')  # Changed to false for real robot
 
@@ -46,6 +47,22 @@ def generate_launch_description():
         arguments=['-d', rviz_config]
     )
 
+    # Launch Stock System
+    stock_system = Node(
+        package='turtlebot3_gazebo',
+        output='screen',
+        executable='CStockList',
+        name='CStockList_node'
+    )
+
+    # Launch Tag Detector
+    tag_detector = Node(
+        package='turtlebot3_gazebo',
+        output='screen',
+        executable='CArUcoDetector',
+        name='CArUcoDetector_node'
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(
@@ -59,6 +76,20 @@ def generate_launch_description():
         TimerAction(
             period=5.0,
             actions=[slam_launch]
+        )
+    )
+
+    ld.add_action(
+        TimerAction(
+            period=5.0,
+            actions=[stock_system]
+        )
+    )
+
+    ld.add_action(
+        TimerAction(
+            period=5.0,
+            actions=[tag_detector]
         )
     )
 
