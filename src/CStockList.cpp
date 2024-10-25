@@ -13,7 +13,7 @@ CStockList::CStockList()
     mPubStockUpdate = this->create_publisher<std_msgs::msg::String>( "stock_update", qos );
 
     // Initialise subscribers
-    mSubScannedMarkerId = this->create_subscription<std_msgs::msg::Int32>(
+    mSubScannedMarkerId = this->create_subscription<turtlebot3_gazebo::msg::AprilTag>(
         "scanned_marker_id", qos, std::bind( &CStockList::RecordStockCallback, this, std::placeholders::_1 ));
     
     RCLCPP_INFO(this->get_logger(), "Stock List Node Initialised");
@@ -32,7 +32,7 @@ CStockList::CStockList( std::string aFilePath )
     mPubStockUpdate = this->create_publisher<std_msgs::msg::String>( "stock_update", qos );
 
     // Initialise subscribers
-    mSubScannedMarkerId = this->create_subscription<std_msgs::msg::Int32>(
+    mSubScannedMarkerId = this->create_subscription<turtlebot3_gazebo::msg::AprilTag>(
         "scanned_marker_id", qos, std::bind( &CStockList::RecordStockCallback, this, std::placeholders::_1 ));
     
     RCLCPP_INFO(this->get_logger(), "Stock List Node Initialised");
@@ -114,14 +114,14 @@ void CStockList::WriteToDisk()
 
 
 #if TEST == false
-void CStockList::RecordStockCallback( const std_msgs::msg::Int32::SharedPtr msg )
+void CStockList::RecordStockCallback( const turtlebot3_gazebo::msg::AprilTag::SharedPtr msg )
 {
-    CItem* item = RetrieveItem( msg->data );
+    CItem* item = RetrieveItem( msg->id );
 
     if( item )
     {
         item->IncrementQuantity();
-        SendUpdate( QUANTITY, msg->data );
+        SendUpdate( QUANTITY, msg->id );
     }
     else
     {

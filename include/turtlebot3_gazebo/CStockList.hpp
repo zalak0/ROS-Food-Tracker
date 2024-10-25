@@ -74,7 +74,7 @@ private:
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr mPubStockUpdate;
 
     // ROS topic subscribers
-    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr mSubScannedMarkerId;
+    rclcpp::Subscription<turtlebot3_gazebo::msg::AprilTag>::SharedPtr mSubScannedMarkerId;
 
     // ROS subscriber callback updates stock record when new ArUco marker is scanned.
     void RecordStockCallback( const std_msgs::msg::Int32::SharedPtr msg );
