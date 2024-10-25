@@ -3,13 +3,15 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/int32.hpp"
+#include "turtlebot3_gazebo/msg/april_tag.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/image_encodings.hpp"
 
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/aruco.hpp>
-#include <mutex>
+#include <vector>
+#include <pair>
 
 /********************************************************************************
 ** CArUcoDetector: The class which analyses the frames published by the camera
@@ -21,7 +23,8 @@ public:
     CArUcoDetector();
 
     // Detects any ArUco tags in an iamge
-    int DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::SharedPtr msg);
+    void detectTags(const sensor_msgs::msg::Image::SharedPtr msg,
+                    std::vector<std::pair< int, double >> scannedTags);
 
 private:
     // ProcessImageCallback: Processes the image and detects ArUco markers.
@@ -29,7 +32,7 @@ private:
 
     // ROS topic subscribers and publishers
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr mSubImage;
-    rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr mPubScannedMarkerId;
+    rclcpp::Publisher<turtlebot3_gazebo::msg::AprilTag>::SharedPtr mPubScannedMarkerId;
 };
 
 #endif // TURTLEBOT3_GAZEBO__ARUCO_DETECTOR

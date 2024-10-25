@@ -10,13 +10,13 @@ CArUcoDetector::CArUcoDetector()
         "/camera/image_raw", 10, std::bind(&CArUcoDetector::ProcessImageCallback, this, std::placeholders::_1));
 
     // Create a publisher to send the detected ArUco markers
-    mPubScannedMarkerId = this->create_publisher<std_msgs::msg::Int32>("scanned_marker_id", 10);
+    mPubScannedMarkerId = this->create_publisher<turtlebot3_gazebo::msg::AprilTag>("scanned_marker_id", 10);
 
     RCLCPP_INFO(this->get_logger(), "ArUco image processor node initialized");
 }
 
-// Detect ArUco tags and return their IDs
-int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::SharedPtr msg)
+// Detect ArUco tags
+void CArUcoDetector::detectTags(const sensor_msgs::msg::Image::SharedPtr msg, std::vector<std::pair< int, int >>* scannedTags)
 {
     cv_bridge::CvImagePtr pCv;
 
@@ -47,37 +47,37 @@ int CArUcoDetector::DetectArUcoTagsAndReturnID(const sensor_msgs::msg::Image::Sh
     // Detect ArUco markers
     cv::aruco::detectMarkers(grayImage, dictionary, markerCorners, markerIds);
 
-    if (markerIds.empty()) {
+    if (markerIds.empty())
+    {
         RCLCPP_INFO(this->get_logger(), "No ArUco markers detected.");
-        return -1;
     }
+    
+    for( int i=0; i<markerIds.size(); i++)
+    {
+        std::pair< int,int > pair = {markerIds[i], markerCorners[i].x};
+        scannedTags->push_back(pair);
 
-    int detectedId = markerIds[0];
-
-    // Log and display the detected markers
-    RCLCPP_INFO(this->get_logger(), "Detected ArUco ID: %d", detectedId);
-    cv::waitKey(1);
-
-    return detectedId;
+        RCLCPP_INFO(this->get_logger(), "Detected ArUco ID: %d, at: %d", markerIds[i], markerCorners[i].x);
+    }
+    
+    return ;
 }
 
 // Callback to process image and detect ArUco markers
 void CArUcoDetector::ProcessImageCallback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
-    static std::mutex wordMutex;  
-    int detectedId = -1;
+    std::vector<std::pair< int, int >> scannedTags;
+    detectTags( msg, &scannedTags );
 
+    for(int i=0; i<scannedTags.size(); i++)
     {
-        std::lock_guard<std::mutex> lock(wordMutex);
-
-        detectedId = DetectArUcoTagsAndReturnID(msg);
+        turtlebot3_gazebo::msg::AprilTag scannedTagMsg;
+        scannedTagMsg.id = scannedTags[i].first;
+        scannedTagMsg.pixel = scannedTags[i].second;
+        mPubScannedMarkerId->publish(scannedTagMsg);
     }
 
-    if (detectedId != -1) {
-        std_msgs::msg::Int32 scannedTagMsg;
-        scannedTagMsg.data = detectedId;
-        mPubScannedMarkerId->publish(scannedTagMsg);
-    }    
+    scannedTags.clear();
 }
 
 int main(int argc, char **argv)
