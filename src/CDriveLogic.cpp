@@ -1,15 +1,18 @@
 #include "turtlebot3_gazebo/CDriveLogic.hpp"
-
 #include <memory>
+#include <cmath>  // For M_PI
 
 using namespace std::chrono_literals;
-
 
 /************************************************************
 ** Constructors and Destructors
 ************************************************************/
 CDriveLogic::CDriveLogic()
-: Node( "turtlebot3_drive_node" )
+: Node( "turtlebot3_drive_node" ),
+  mDistanceTraveled(0.0),
+  mPrevScanRange(0.0),
+  mPerformTurn(false),
+  mTurnAngle(0.0)
 {
     for( int i = 0; i < mNumScans; i++ )
     {
@@ -75,9 +78,9 @@ void CDriveLogic::ImageStatusCallback( const std_msgs::msg::String::SharedPtr ms
 
 void CDriveLogic::ScanCallback( const sensor_msgs::msg::LaserScan::SharedPtr msg )
 {
-    uint16_t scan_angle[ mNumScans ] = {90, 0};
+    uint16_t scan_angle[ mNumScans ] = {90, 0};  // Left = 90 degrees, Front = 0 degrees
 
-    for( int i=0; i<mNumScans; i++ )
+    for( int i = 0; i < mNumScans; i++ )
     {
         if( std::isinf( msg->ranges.at( scan_angle[ i ] )))
         {
@@ -108,6 +111,7 @@ void CDriveLogic::GetCommandCallback()
 {
     double targetDist = 0.1;  // Target distance the bot maintains from the wall
     double minDist = 0.3;     // Minimum distance to object in front of bot
+    double distanceStep = 0.3; // Distance to travel before stopping (10cm)
 
     if( mGoalReached )
     {
@@ -115,25 +119,62 @@ void CDriveLogic::GetCommandCallback()
         UpdateVelocityCommand( 0.0, 0.0 );
         return;
     }
-    else if (mSeekGoal)
+
+    // Calculate distance traveled based on laser scan (simple approximation)
+    if (!mPerformTurn)
     {
-        UpdateVelocityCommand( mLinearVelocity, 0.0 );
+        double currentRange = mScanData[FRONT];
+        if (mPrevScanRange > 0) 
+        {
+            double deltaRange = std::abs(currentRange - mPrevScanRange);
+            mDistanceTraveled += deltaRange;
+        }
+        mPrevScanRange = currentRange;
+
+        // Check if the robot has traveled the required distance
+        if (mDistanceTraveled >= distanceStep) 
+        {
+            // Stop and prepare to perform a 360-degree turn
+            UpdateVelocityCommand(0.0, 0.0);
+            mPerformTurn = true;
+            mTurnAngle = 0.0;
+            mDistanceTraveled = 0.0;  // Reset the traveled distance
+        }
     }
-    else if (mScanData[FRONT] < minDist)
+
+    // Perform the 360-degree turn
+    if (mPerformTurn) 
     {
-        UpdateVelocityCommand( 0.0, -1 * mAngularVelocity );
+        double angularTurnSpeed = M_PI / 2.0; // Speed of turning (half a radian per second)
+        mTurnAngle += angularTurnSpeed * 0.008; // 8ms timer update
+        UpdateVelocityCommand(0.0, angularTurnSpeed);
+
+        // Check if the turn is complete
+        if (mTurnAngle >= 2 * M_PI) 
+        {
+            // Turn completed, stop and resume forward movement
+            UpdateVelocityCommand(0.0, 0.0);
+            mPerformTurn = false;
+        }
+        return;
+    }
+
+    // Regular driving behavior if no turn is needed
+    if (mScanData[FRONT] < minDist)
+    {
+        UpdateVelocityCommand(0.0, -1 * mAngularVelocity);
     }
     else if (mScanData[LEFT] < targetDist)
     {
-        UpdateVelocityCommand( mLinearVelocity, -0.3 * mAngularVelocity );
+        UpdateVelocityCommand(mLinearVelocity, -0.3 * mAngularVelocity);
     }
     else if (mScanData[LEFT] > targetDist)
     {
-        UpdateVelocityCommand( mLinearVelocity, 0.3 * mAngularVelocity );
+        UpdateVelocityCommand(mLinearVelocity, 0.3 * mAngularVelocity);
     }
     else
     {
-        UpdateVelocityCommand( mLinearVelocity, 0.0 );
+        UpdateVelocityCommand(mLinearVelocity, 0.0);
     }
 }
 

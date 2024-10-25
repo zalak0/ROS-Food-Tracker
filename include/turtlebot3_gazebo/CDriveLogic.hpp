@@ -2,7 +2,6 @@
 #define TURTLEBOT3_GAZEBO__DRIVE_LOGIC
 
 #include "std_msgs/msg/string.hpp"
-
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -18,9 +17,13 @@
 enum eDirections
 {
     LEFT = 0,
-    FRONT
+    FRONT,
 };
 
+/********************************************************************************
+** Constants
+********************************************************************************/
+const int mNumScans = 2;  // Number of scan directions (FRONT, LEFT)
 
 /********************************************************************************
 ** CDriveLogic: The class implementing the logic determining where the turtlebot
@@ -34,46 +37,27 @@ public:
     ~CDriveLogic();
 
 private:
-    // ROS topic publishers
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr mPubCommandVelocity; // To send velocity commands 
+    void ImageStatusCallback(const std_msgs::msg::String::SharedPtr msg);
+    void ScanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg);
+    void UpdateVelocityCommand(double linear, double angular);
+    void GetCommandCallback();
 
-    // ROS topic subscribers
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr mSubScan;  // To receive scan data
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr mSubMazeSolved;  // To receive image status
-
-    // Constants
-    static const int mNumScans = 2;         // The number of scan ranges to store
-    const double mLinearVelocity = 0.1;    // Linear velocity to travel at
-    const double mAngularVelocity = 1.5;    // Angular velocity to travel at
-
-    // Variables
-    double mScanData[mNumScans];            // The most recently received scan ranges
-    bool mGoalReached;                      // Whether the end zone has been reached
-    bool mSeekGoal;                         // Whether the end zone has been sighted
-
-    // ROS timer
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr mPubCommandVelocity;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr mSubScan;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr mSubMazeSolved;
     rclcpp::TimerBase::SharedPtr mUpdateTimer;
 
-    // GetCommandCallback: Computes the current velocity command.
-    void GetCommandCallback();
-    
-    // UpdateVelocityCommand: Updates the velocity setpoint of the turtlebot diff
-    //                        drive to the specified values.
-    // Parameters:
-    // - linear: Linear velocity to move at (m/s)
-    // - angular: Angular velocity to move at (rad/s)
-    void UpdateVelocityCommand( double linear, double angular );
+    double mScanData[mNumScans];  // Holds scan data (FRONT, LEFT)
+    bool mGoalReached;
+    bool mSeekGoal;
 
-    // ScanCallback: Loads the new scan data into the member variable.
-    // Parameters:
-    // - msg: message received from the LiDAR sensor
-    void ScanCallback( const sensor_msgs::msg::LaserScan::SharedPtr msg );
-    
-    // ImageStatusCallback: Sets navigation parameters based on the status
-    //                      received from the image processor node.
-    // Parameters:
-    // - msg: message received from the image processor node
-    void ImageStatusCallback( const std_msgs::msg::String::SharedPtr msg );
+    // New member variables for distance tracking and turning logic
+    double mDistanceTraveled;
+    double mPrevScanRange;
+    bool mPerformTurn;
+    double mTurnAngle;
+
+    const double mLinearVelocity = 0.2;   // Example linear velocity
+    const double mAngularVelocity = 0.5;  // Example angular velocity
 };
-
 #endif  // TURTLEBOT3_GAZEBO__DRIVE_LOGIC

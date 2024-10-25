@@ -27,3 +27,5 @@ ros2 run turtlebot3_gazebo CStockList
 ros2 run turtlebot3_gazebo CArUcoDetector
 
 ros2 run turtlebot3_gazebo CDriveLogic
+
+ros2 launch turtlebot3_gazebo turtlebot3_bringup.launch.py
