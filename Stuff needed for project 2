@@ -28,4 +28,4 @@ ros2 run turtlebot3_gazebo CArUcoDetector
 
 ros2 run turtlebot3_gazebo CDriveLogic
 
-ros2 launch turtlebot3_gazebo turtlebot3_bringup.launch.py
+ros2 launch turtlebot3_gazebo turtlebot3_bringup.launch.py use_sim_time:=true
