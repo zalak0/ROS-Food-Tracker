@@ -39,15 +39,20 @@ CDriveLogic::CDriveLogic()
     RCLCPP_INFO( this->get_logger(), "Turtlebot3 simulation node has been initialised" );
 }
 
-
 CDriveLogic::~CDriveLogic()
-{   
+{
+    // Create a Twist message to stop the robot
     geometry_msgs::msg::Twist cmd_vel;
-    cmd_vel.linear.x = 0;
-    cmd_vel.angular.z = 0;
-    mPubCommandVelocity->publish( cmd_vel );
-    
-    RCLCPP_INFO( this->get_logger(), "Turtlebot3 simulation node has been terminated" );
+    cmd_vel.linear.x = 0.0;
+    cmd_vel.angular.z = 0.0;
+
+    // Publish the stop command
+    mPubCommandVelocity->publish(cmd_vel);
+
+    // Add a small delay to ensure the message is processed before shutdown
+    rclcpp::sleep_for(500ms);
+
+    RCLCPP_INFO(this->get_logger(), "Turtlebot3 simulation node has been terminated and robot stopped.");
 }
 
 
@@ -111,7 +116,7 @@ void CDriveLogic::GetCommandCallback()
 {
     double targetDist = 0.1;  // Target distance the bot maintains from the wall
     double minDist = 0.3;     // Minimum distance to object in front of bot
-    double distanceStep = 0.3; // Distance to travel before stopping (10cm)
+    double distanceStep = 0.3; // Distance to travel before stopping (30cm)
 
     if( mGoalReached )
     {
